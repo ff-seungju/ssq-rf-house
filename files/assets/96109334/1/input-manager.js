@@ -79,11 +79,9 @@ class InputManager extends pc.ScriptType {
     );
 
     let raycastResults = this.app.systems.rigidbody.raycastAll(start, end);
-    console.log("raycast result1", raycastResults);
     let filtered = raycastResults.filter((result) =>
       result.entity.tags.has("grid")
     );
-    console.log("ray result", filtered);
     if (filtered.length > 0) {
       const pos = filtered[0].entity.getPosition();
       const intPos = [
@@ -97,7 +95,6 @@ class InputManager extends pc.ScriptType {
   }
 
   onMessage(message) {
-    console.log("message", message);
     if (message.data.type !== "house_select_item") return;
     const data = message.data;
     switch (data.type) {
