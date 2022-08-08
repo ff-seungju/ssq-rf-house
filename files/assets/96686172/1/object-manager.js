@@ -12,7 +12,7 @@ class ObjectManager extends pc.ScriptType {
 
   spawn(object) {
     const template = this.item_table.find(
-      (el) => el.name === "SM_Prop_Bed_single_02_H"
+      (el) => el.name === "living_bed_02_double"
     );
     const pos = object.pos;
     const inst = template.resource.instantiate();
