@@ -11,11 +11,11 @@ class ObjectManager extends pc.ScriptType {
   }
 
   spawn(object) {
-    const template = this.item_table.find(
-      (el) => el.name === "living_bed_02_double"
+    const template = this.item_config.find(
+      (el) => el.item.name === "living_bed_02_double"
     );
     const pos = object.pos;
-    const inst = template.resource.instantiate();
+    const inst = template.item.resource.instantiate();
     inst.name = object.oid;
     inst.setter = object.setter;
     inst.type = object.type;
@@ -37,10 +37,9 @@ class ObjectManager extends pc.ScriptType {
   }
 
   sendItemTable() {
-    console.log("itemTable", this.item_table);
     const itemList = [];
-    this.item_table.forEach((item, i) => {
-      itemList.push({ id: i, title: item.name });
+    this.item_config.forEach((config, i) => {
+      itemList.push({ id: i, title: config.item.name, price: config.price });
     });
     window.parent.postMessage(
       {
@@ -73,8 +72,19 @@ class ObjectManager extends pc.ScriptType {
 
 pc.registerScript(ObjectManager, "objectManager");
 
-ObjectManager.attributes.add("item_table", {
-  type: "asset",
-  assetType: "template",
+ObjectManager.attributes.add("item_config", {
+  type: "json",
+  schema: [
+    {
+      name: "price",
+      type: "number",
+      default: 10,
+    },
+    {
+      name: "item",
+      type: "asset",
+      assetType: "template",
+    },
+  ],
   array: true,
 });
