@@ -66,35 +66,55 @@ class InputManager extends pc.ScriptType {
   }
 
   setHouseItem(screenPosition) {
-    if (!this.selected_item) return;
-    const start = this._raycastCamera.screenToWorld(
-      screenPosition.x,
-      screenPosition.y,
-      this._raycastCamera.nearClip
-    );
-    const end = this._raycastCamera.screenToWorld(
-      screenPosition.x,
-      screenPosition.y,
-      200
-    );
+    if (!this.selected_item) {
+      // 회수
+      const start = this._raycastCamera.screenToWorld(
+        screenPosition.x,
+        screenPosition.y,
+        this._raycastCamera.nearClip
+      );
+      const end = this._raycastCamera.screenToWorld(
+        screenPosition.x,
+        screenPosition.y,
+        200
+      );
+      let raycastResults = this.app.systems.rigidbody.raycastFirst(start, end);
+      console.log("raycastFirst", raycastResults);
+    } else {
+      // 설치
+      const start = this._raycastCamera.screenToWorld(
+        screenPosition.x,
+        screenPosition.y,
+        this._raycastCamera.nearClip
+      );
+      const end = this._raycastCamera.screenToWorld(
+        screenPosition.x,
+        screenPosition.y,
+        200
+      );
 
-    let raycastResults = this.app.systems.rigidbody.raycastAll(start, end);
-    let filtered = raycastResults.filter((result) =>
-      result.entity.tags.has("grid")
-    );
-    if (filtered.length > 0) {
-      const pos = filtered[0].entity.getPosition();
-      const intPos = [
-        Math.round(pos.x * 10) / 10,
-        0,
-        Math.round(pos.z * 10) / 10,
-      ];
-      this.app.matchHandler.sendSetHouseItem(intPos, this.selected_item);
+      let raycastResults = this.app.systems.rigidbody.raycastAll(start, end);
+      let filtered = raycastResults.filter((result) =>
+        result.entity.tags.has("grid")
+      );
+      if (filtered.length > 0) {
+        const pos = filtered[0].entity.getPosition();
+        const intPos = [
+          Math.round(pos.x * 10) / 10,
+          0,
+          Math.round(pos.z * 10) / 10,
+        ];
+        this.app.matchHandler.sendSetHouseItem(intPos, this.selected_item);
+      }
     }
   }
 
   onMessage(message) {
-    if (message.data.type !== "house_select_item") return;
+    if (
+      message.data.type !== "house_select_item" &&
+      message.data.type !== "house_collect_item"
+    )
+      return;
     const data = message.data;
     switch (data.type) {
       case "house_select_item":
@@ -107,6 +127,10 @@ class InputManager extends pc.ScriptType {
           this.selected_item = null;
           this.inputTarget.fire("house_select_item");
         }
+        break;
+      case "house_collect_item":
+        this.isHouseEditting = true;
+        this.selected_item = null;
         break;
       default:
         break;
