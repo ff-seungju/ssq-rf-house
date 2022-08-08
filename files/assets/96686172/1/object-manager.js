@@ -1,18 +1,36 @@
-var ObjectManager = pc.createScript('objectManager');
+class ObjectManager extends pc.ScriptType {
+  initialize() {
+    this._root = this.app.root.findByName("Root");
+    this.app.objectManager = this;
+    this.objectMap = new Map();
+  }
 
-// initialize code called once per entity
-ObjectManager.prototype.initialize = function() {
+  spawn(object) {
+    console.log("this item table", this.item_table);
+    const template = this.item_table.find(
+      (el) => el.name === "SM_Prop_Bed_single_02_H"
+    );
+    const pos = object.pos;
+    console.log("template", template);
+    const inst = template.resource.instantiate();
+    inst.name = object.oid;
+    inst.setter = object.setter;
+    inst.type = object.type;
 
-};
+    const objectPos = new pc.Vec3();
+    objectPos.set(pos[0], pos[1], pos[2]);
 
-// update code called every frame
-ObjectManager.prototype.update = function(dt) {
+    if (inst.rigidbody) inst.rigidbody.teleport(objectPos);
+    else inst.setPosition(objectPos);
+    this.objectMap.set(object.oid, inst);
+    this._root.addChild(inst);
+  }
+}
 
-};
+pc.registerScript(ObjectManager, "objectManager");
 
-// swap method called for script hot-reloading
-// inherit your script state here
-// ObjectManager.prototype.swap = function(old) { };
-
-// to learn more about script anatomy, please read:
-// https://developer.playcanvas.com/en/user-manual/scripting/
+ObjectManager.attributes.add("item_table", {
+  type: "asset",
+  assetType: "template",
+  array: true,
+});

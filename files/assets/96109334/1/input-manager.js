@@ -89,7 +89,6 @@ class InputManager extends pc.ScriptType {
         0,
         Math.round(pos.z * 10) / 10,
       ];
-      this.inputTarget.fire("house_set_item", intPos, this.selected_item);
       this.app.matchHandler.sendSetHouseItem(intPos, this.selected_item);
     }
   }

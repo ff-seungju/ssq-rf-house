@@ -266,10 +266,10 @@ class MatchHandler extends pc.ScriptType {
   onMatchState(match_id, op_code, data, presence, match) {
     console.log("ON MATCH STATE:", data);
     this.spawnPlayerBatch(data.players);
+    this.spawnObjectBatch(data.objects);
     setTimeout(async () => {
       const account = await this.nakamaMatch.Account.get();
       const char_type = getRandomInt(0, 5);
-      console.log("RANDOM CHAR TYPE:", char_type);
       await this.sendMatchState(this.opCode.PLAYER_SPAWN, {
         user_id: account.user_id,
         char_type: char_type,
@@ -281,7 +281,6 @@ class MatchHandler extends pc.ScriptType {
   }
 
   onPlayerSpawn(match_id, op_code, data, presence, match) {
-    console.log("PLAYER_SPAWN:", data);
     if (data.user_id === this.nakamaMatch.Account.user().id) {
       if (this.playerMap.get(data.user_id)) return;
       const inst = this.spawnPlayer(data, true);
@@ -308,9 +307,8 @@ class MatchHandler extends pc.ScriptType {
   }
 
   onPlayerSetItem(match_id, op_code, data, presence, match) {
-    const player = this.playerMap.get(presence.user_id);
     console.log("onPlayerSetItem", data);
-    if (!player) return;
+    this.app.objectManager.spawn(data);
   }
 
   async sendMatchState(op_code, data, presences = null) {
@@ -387,8 +385,15 @@ class MatchHandler extends pc.ScriptType {
     }
   }
 
+  spawnObjectBatch(objects) {
+    if (Array.isArray(objects)) {
+      objects.forEach((object) => {
+        this.app.objectManager.spawn(object);
+      });
+    }
+  }
+
   spawnPlayer(playerInfo, self) {
-    console.log("spawn player", playerInfo, this.select_char);
     const inst = this.player_root.instantiate();
     const modelInst = this.player_model.instantiate();
     modelInst.name = "spawn_model";

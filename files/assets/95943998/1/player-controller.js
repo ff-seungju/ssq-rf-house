@@ -28,7 +28,6 @@ class PlayerController extends pc.ScriptType {
     this.speed = 5;
 
     this.entity.on("house_select_item", this.onSelectHouseItem, this);
-    this.entity.on("house_set_item", this.onSetHouseItem, this);
     this.grid_pos = new pc.Vec3();
     this.item_set_pos = new pc.Vec3();
     this.item_grid = this.entity.findByTag("item_grid")[0];
@@ -179,16 +178,6 @@ class PlayerController extends pc.ScriptType {
       this.house_material.opacity = 1;
       this.house_material.update();
     }
-  }
-
-  onSetHouseItem(pos, item) {
-    console.log("ITEM POS, TYPE", pos, item);
-    this.item_set_pos.set(pos[0], pos[1], pos[2]);
-    const inst = this.app.assets
-      .find("H_prop_table_set_01", "template")
-      .resource.instantiate();
-    this._root.addChild(inst);
-    inst.setPosition(this.item_set_pos);
   }
 }
 
