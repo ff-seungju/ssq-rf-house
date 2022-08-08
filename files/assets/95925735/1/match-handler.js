@@ -93,6 +93,7 @@ class MatchHandler extends pc.ScriptType {
 
     this._matchHandler = this.app.root.findByName("MatchHandler");
     this._matchHandler.script.inputManager.enabled = true;
+    this._mainCamera = this.app.root.findByTag("camera")[0];
   }
 
   update() {
@@ -288,7 +289,6 @@ class MatchHandler extends pc.ScriptType {
       if (this._mainCamera) {
         this._mainCamera.script.orthoCamera.enabled = true;
         this._mainCamera.script.orthoCamera.lookAt = inst;
-        this._mainCamera.script.orthoCamera.changeView(1);
       }
 
       this._matchHandler.script.inputManager.inputTarget = inst;
