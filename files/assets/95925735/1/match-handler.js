@@ -327,6 +327,14 @@ class MatchHandler extends pc.ScriptType {
   onPlayerSetItem(match_id, op_code, data, presence, match) {
     console.log("onPlayerSetItem", data);
     this.app.objectManager.spawn(data);
+    if (data.setter === this.localPlayer.name) {
+      window.parent.postMessage(
+        {
+          type: "house_set_item",
+        },
+        "*"
+      );
+    }
   }
 
   async sendMatchState(op_code, data, presences = null) {
