@@ -36,12 +36,34 @@ class ObjectManager extends pc.ScriptType {
     object.destroy();
   }
 
+  sendItemTable() {
+    console.log("itemTable", this.item_table);
+    const itemList = [];
+    this.item_table.forEach((item, i) => {
+      itemList.push({ id: i, title: item.name });
+    });
+    window.parent.postMessage(
+      {
+        type: "get_house_shop",
+        item_list: itemList,
+      },
+      "*"
+    );
+  }
+
   onMessage(message) {
-    if (message.data.type !== "collect_item") return;
+    if (
+      message.data.type !== "collect_item" &&
+      message.data.type !== "get_house_shop"
+    )
+      return;
     const data = message.data;
     switch (data.type) {
       case "collect_item":
         this.destroy(data.oid);
+        break;
+      case "get_house_shop":
+        this.sendItemTable();
         break;
       default:
         break;
