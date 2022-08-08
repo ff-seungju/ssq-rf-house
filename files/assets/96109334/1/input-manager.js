@@ -51,6 +51,8 @@ class InputManager extends pc.ScriptType {
       raycastResults.splice(0, 1);
     if (raycastResults[0] && raycastResults[0].entity.tags.has("player"))
       raycastResults.splice(0, 1);
+    if (raycastResults[0] && raycastResults[0].entity.tags.has("house_item"))
+      raycastResults.splice(0, 1);
 
     const ray0 = raycastResults[0];
     if (!ray0) return;
@@ -78,8 +80,21 @@ class InputManager extends pc.ScriptType {
         screenPosition.y,
         200
       );
-      let raycastResults = this.app.systems.rigidbody.raycastFirst(start, end);
-      console.log("raycastFirst", raycastResults);
+      let raycastResult = this.app.systems.rigidbody.raycastFirst(start, end);
+      console.log("raycastFirst", raycastResult);
+      if (
+        raycastResult.entity.tags.has("house_item") &&
+        this.inputTarget.name === raycastResult.entity.setter
+      ) {
+        window.parent.postMessage(
+          {
+            type: "ask_collect_item",
+            item_type: raycastResult.entity.type,
+            oid: raycastResult.entity.name,
+          },
+          "*"
+        );
+      }
     } else {
       // 설치
       const start = this._raycastCamera.screenToWorld(
@@ -129,8 +144,9 @@ class InputManager extends pc.ScriptType {
         }
         break;
       case "house_collect_item":
-        this.isHouseEditting = true;
         this.selected_item = null;
+        if (data.bool) this.isHouseEditting = true;
+        else this.isHouseEditting = false;
         break;
       default:
         break;

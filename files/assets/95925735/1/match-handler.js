@@ -292,9 +292,27 @@ class MatchHandler extends pc.ScriptType {
       }
 
       this._matchHandler.script.inputManager.inputTarget = inst;
+      window.parent.postMessage(
+        {
+          type: "player#join",
+          user_id: data.user_id,
+          display_name: decodeURIComponent(window.atob(data.display_name)),
+          self: true,
+        },
+        "*"
+      );
     } else {
       if (this.playerMap.get(data.user_id)) return;
       this.spawnPlayer(data, false);
+      window.parent.postMessage(
+        {
+          type: "player#join",
+          user_id: data.user_id,
+          display_name: decodeURIComponent(window.atob(data.display_name)),
+          self: false,
+        },
+        "*"
+      );
     }
   }
 
@@ -372,7 +390,9 @@ class MatchHandler extends pc.ScriptType {
     const leaves = matchPresenceEvent.leaves;
 
     if (leaves && leaves.length > 0) {
-      leaves.forEach((player) => this.destroyPlayer(player.user_id));
+      leaves.forEach((player) => {
+        this.destroyPlayer(player.user_id);
+      });
     }
   }
 
@@ -381,6 +401,17 @@ class MatchHandler extends pc.ScriptType {
     for (const playerInfo of players) {
       if (playerInfo.user_id !== accountUserId) {
         this.spawnPlayer(playerInfo, false);
+        window.parent.postMessage(
+          {
+            type: "player#join",
+            user_id: playerInfo.user_id,
+            display_name: decodeURIComponent(
+              window.atob(playerInfo.display_name)
+            ),
+            self: false,
+          },
+          "*"
+        );
       }
     }
   }
@@ -394,6 +425,7 @@ class MatchHandler extends pc.ScriptType {
   }
 
   spawnPlayer(playerInfo, self) {
+    console.log("playerInfo", playerInfo);
     const inst = this.player_root.instantiate();
     const modelInst = this.player_model.instantiate();
     modelInst.name = "spawn_model";
@@ -403,7 +435,6 @@ class MatchHandler extends pc.ScriptType {
       modelInst.model.asset = modelAsset;
     }
     inst.addChild(modelInst);
-    this._root.addChild(inst);
     inst.name = playerInfo.user_id;
     inst.display_name = decodeURIComponent(
       window.atob(playerInfo.display_name)
@@ -422,12 +453,17 @@ class MatchHandler extends pc.ScriptType {
     if (self) {
       inst.tags.add("self");
     }
+    this._root.addChild(inst);
     return inst;
   }
 
   destroyPlayer(user_id) {
     const player = this.playerMap.get(user_id);
     if (player) {
+      window.parent.postMessage(
+        { type: "player#leave", user_id: user_id },
+        "*"
+      );
       this.playerMap.delete(user_id);
       setTimeout((p) => p.destroy(), 0, player);
     }

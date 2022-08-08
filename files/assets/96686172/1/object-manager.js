@@ -3,15 +3,18 @@ class ObjectManager extends pc.ScriptType {
     this._root = this.app.root.findByName("Root");
     this.app.objectManager = this;
     this.objectMap = new Map();
+
+    window.addEventListener("message", this.onMessage.bind(this));
+    this.on("destroy", () => {
+      window.removeEventListener("message", this.onMessage.bind(this));
+    });
   }
 
   spawn(object) {
-    console.log("this item table", this.item_table);
     const template = this.item_table.find(
       (el) => el.name === "SM_Prop_Bed_single_02_H"
     );
     const pos = object.pos;
-    console.log("template", template);
     const inst = template.resource.instantiate();
     inst.name = object.oid;
     inst.setter = object.setter;
@@ -24,6 +27,25 @@ class ObjectManager extends pc.ScriptType {
     else inst.setPosition(objectPos);
     this.objectMap.set(object.oid, inst);
     this._root.addChild(inst);
+  }
+
+  destroy(oid) {
+    const object = this.objectMap.get(oid);
+    if (!object) return;
+    this.objectMap.delete(oid);
+    object.destroy();
+  }
+
+  onMessage(message) {
+    if (message.data.type !== "collect_item") return;
+    const data = message.data;
+    switch (data.type) {
+      case "collect_item":
+        this.destroy(data.oid);
+        break;
+      default:
+        break;
+    }
   }
 }
 

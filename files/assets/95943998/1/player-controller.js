@@ -157,7 +157,7 @@ class PlayerController extends pc.ScriptType {
         this.anim.setBoolean(this.currentDance, true);
       } else {
         if (this.anim._parameters["dance"] !== undefined)
-          this.anim.setBoolean("dance", true);
+          this.anim.setBoolean("dance1", true);
       }
     }
   }
