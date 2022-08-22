@@ -39,8 +39,14 @@ class ObjectManager extends pc.ScriptType {
   sendItemTable() {
     const itemList = [];
     this.item_config.forEach((config, i) => {
-      itemList.push({ id: i, title: config.item.name, price: config.price });
+      itemList.push({
+        id: i,
+        title: config.item.name,
+        price: config.price,
+        type: config.type,
+      });
     });
+    console.log("itemList", this.item_config);
     window.parent.postMessage(
       {
         type: "get_house_shop",
@@ -84,6 +90,18 @@ ObjectManager.attributes.add("item_config", {
       name: "item",
       type: "asset",
       assetType: "template",
+    },
+    {
+      name: "type",
+      type: "string",
+      enum: [
+        { bath: "bath" },
+        { kitchen: "kitchen" },
+        { living: "living" },
+        { ground: "ground" },
+        { wall: "wall" },
+      ],
+      default: "ground",
     },
   ],
   array: true,
