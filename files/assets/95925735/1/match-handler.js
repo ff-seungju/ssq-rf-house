@@ -61,7 +61,6 @@ class MatchHandler extends pc.ScriptType {
   initialize() {
     this.app.matchHandler = this;
     window.addEventListener("message", this.onMessage.bind(this));
-    console.log("House Match Handler init");
     window.parent.postMessage({ type: "request_house_init" }, "*");
 
     this.on("destroy", () => {
@@ -123,7 +122,6 @@ class MatchHandler extends pc.ScriptType {
     if (data.type !== "house_init" && data.type !== "house_chat") return;
     switch (data.type) {
       case "house_init":
-        console.log("house init");
         this.onHouseInit(data);
         break;
       case "house_chat":
@@ -155,18 +153,15 @@ class MatchHandler extends pc.ScriptType {
 
         const cid = data.custom_id;
         const username = data.username;
-        console.log("drv1", drv);
         drv.initialize(this.app, {
           host: host,
           port: port,
           serverkey: serverkey,
           useSSL: useSSL,
         });
-        console.log("drv", drv);
         if (!(await drv.authenticate({ cid: cid }, true, username))) continue;
         if (!(await drv.connect(useSSL, verbose, protobuf))) continue;
 
-        console.log("drv2", drv);
         const searchResult = await drv.gameplay.createMatch(
           "create_match",
           JSON.stringify({
@@ -177,7 +172,6 @@ class MatchHandler extends pc.ScriptType {
         );
         const parsed = JSON.parse(searchResult);
         this.match_id = parsed.match_id;
-        console.log("searchResult", searchResult);
         this.nakamaMatch = window.nakamaMatch = drv;
         break;
       }
@@ -203,7 +197,6 @@ class MatchHandler extends pc.ScriptType {
   }
 
   onHouseChat(data) {
-    console.log("ON HOUSE CHAT", data);
     this.nakamaMatch.social.writeChatById(`2...${this.match_owner}`, {
       msg: data.msg,
       sender: data.sender,
@@ -227,7 +220,6 @@ class MatchHandler extends pc.ScriptType {
   }
 
   onHouseChannelMessage(data) {
-    console.log("ON HOUSE CHANNEL MESSAGE", data);
     (async () => {
       let account;
       if (this.nakamaMatch.account) {
@@ -265,7 +257,6 @@ class MatchHandler extends pc.ScriptType {
   }
 
   onMatchState(match_id, op_code, data, presence, match) {
-    console.log("ON MATCH STATE:", data);
     this.spawnPlayerBatch(data.players);
     this.spawnObjectBatch(data.objects);
     setTimeout(async () => {
@@ -325,7 +316,6 @@ class MatchHandler extends pc.ScriptType {
   }
 
   onPlayerSetItem(match_id, op_code, data, presence, match) {
-    console.log("onPlayerSetItem", data);
     this.app.objectManager.spawn(data);
     if (data.setter === this.localPlayer.name) {
       window.parent.postMessage(
@@ -433,7 +423,6 @@ class MatchHandler extends pc.ScriptType {
   }
 
   spawnPlayer(playerInfo, self) {
-    console.log("playerInfo", playerInfo);
     const inst = this.player_root.instantiate();
     const modelInst = this.player_model.instantiate();
     modelInst.name = "spawn_model";
