@@ -86,11 +86,16 @@ class InputManager extends pc.ScriptType {
         raycastResult.entity.tags.has("house_item") &&
         this.inputTarget.name === raycastResult.entity.setter
       ) {
+        const uiPivot = raycastResult.entity.findByTag("ui_pivot")[0];
+        const uiPosition = this._raycastCamera.worldToScreen(
+          uiPivot.getPosition()
+        );
         window.parent.postMessage(
           {
             type: "ask_collect_item",
             item_type: raycastResult.entity.type,
             oid: raycastResult.entity.name,
+            ui_pos: [Math.floor(uiPosition.x), Math.floor(uiPosition.y)],
           },
           "*"
         );
