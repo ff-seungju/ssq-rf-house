@@ -73,6 +73,8 @@ class MatchHandler extends pc.ScriptType {
       PLAYER_SPAWN: 3,
       PLAYER_MOVE: 4,
       PLAYER_SET_ITEM: 5,
+      PLAYER_ROTATE_ITEM: 6,
+      PLAYER_COLLECT_ITEM: 7,
       SEND_EMOTION: 27,
     };
 
@@ -119,13 +121,25 @@ class MatchHandler extends pc.ScriptType {
 
   onMessage(message) {
     const data = message.data;
-    if (data.type !== "house_init" && data.type !== "house_chat") return;
+    if (
+      data.type !== "house_init" &&
+      data.type !== "house_chat" &&
+      data.type !== "house_rotate_item" &&
+      data.type !== "house_collect_item"
+    )
+      return;
     switch (data.type) {
       case "house_init":
         this.onHouseInit(data);
         break;
       case "house_chat":
         this.onHouseChat(data);
+        break;
+      case "house_rotate_item":
+        this.sendRotateHouseItem(data.oid);
+        break;
+      case "house_collect_item":
+        this.sendCollectHouseItem(data.oid);
         break;
       default:
         break;
@@ -327,6 +341,15 @@ class MatchHandler extends pc.ScriptType {
     }
   }
 
+  onPlayerRotateItem(match_id, op_code, data, presence, match) {
+    this.app.objectManager.rotate(data.oid, data.rotY);
+  }
+
+  onPlayerCollectItem(match_id, op_code, data, presence, match) {
+    console.log('data', data);
+    this.app.objectManager.destroy(data.oid);
+  }
+
   async sendMatchState(op_code, data, presences = null) {
     return await this.nakamaMatch.sendMatchState(
       this.match_id,
@@ -365,6 +388,28 @@ class MatchHandler extends pc.ScriptType {
     );
   }
 
+  sendRotateHouseItem(oid) {
+    setTimeout(
+      async (oid) => {
+        await this.sendMatchState(this.opCode.PLAYER_ROTATE_ITEM, { oid: oid });
+      },
+      0,
+      oid
+    );
+  }
+
+  sendCollectHouseItem(oid) {
+    setTimeout(
+      async (oid) => {
+        await this.sendMatchState(this.opCode.PLAYER_COLLECT_ITEM, {
+          oid: oid,
+        });
+      },
+      0,
+      oid
+    );
+  }
+
   processMatchData(match_id, op_code, data, presence, match) {
     switch (op_code) {
       case this.opCode.MATCH_STATE:
@@ -378,6 +423,12 @@ class MatchHandler extends pc.ScriptType {
         break;
       case this.opCode.PLAYER_SET_ITEM:
         this.onPlayerSetItem(match_id, op_code, data, presence, match);
+        break;
+      case this.opCode.PLAYER_ROTATE_ITEM:
+        this.onPlayerRotateItem(match_id, op_code, data, presence, match);
+        break;
+      case this.opCode.PLAYER_COLLECT_ITEM:
+        this.onPlayerCollectItem(match_id, op_code, data, presence, match);
         break;
       default:
         break;

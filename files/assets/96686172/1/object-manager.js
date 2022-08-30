@@ -4,6 +4,9 @@ class ObjectManager extends pc.ScriptType {
     this.app.objectManager = this;
     this.objectMap = new Map();
 
+    this.vec = new pc.Vec3();
+    this.quat = new pc.Quat();
+
     window.addEventListener("message", this.onMessage.bind(this));
     this.on("destroy", () => {
       window.removeEventListener("message", this.onMessage.bind(this));
@@ -22,11 +25,20 @@ class ObjectManager extends pc.ScriptType {
 
     const objectPos = new pc.Vec3();
     objectPos.set(pos[0], pos[1], pos[2]);
-
     if (inst.rigidbody) inst.rigidbody.teleport(objectPos);
     else inst.setPosition(objectPos);
+    if (object.rotY !== 0) inst.setEulerAngles(0, object.rotY, 0);
     this.objectMap.set(object.oid, inst);
     this._root.addChild(inst);
+  }
+
+  rotate(oid, rotY) {
+    const object = this.objectMap.get(oid);
+    console.log("oid, rotY", oid, rotY);
+    if (!object) return;
+    this.vec.set(0, rotY, 0);
+    this.quat.setFromEulerAngles(this.vec);
+    object.setRotation(this.quat);
   }
 
   destroy(oid) {
@@ -46,7 +58,6 @@ class ObjectManager extends pc.ScriptType {
         type: config.type,
       });
     });
-    console.log("itemList", this.item_config);
     window.parent.postMessage(
       {
         type: "get_house_shop",
@@ -57,16 +68,9 @@ class ObjectManager extends pc.ScriptType {
   }
 
   onMessage(message) {
-    if (
-      message.data.type !== "collect_item" &&
-      message.data.type !== "get_house_shop"
-    )
-      return;
+    if (message.data.type !== "get_house_shop") return;
     const data = message.data;
     switch (data.type) {
-      case "collect_item":
-        this.destroy(data.oid);
-        break;
       case "get_house_shop":
         this.sendItemTable();
         break;

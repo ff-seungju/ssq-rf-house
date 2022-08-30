@@ -81,7 +81,7 @@ class InputManager extends pc.ScriptType {
         200
       );
       let raycastResult = this.app.systems.rigidbody.raycastFirst(start, end);
-      console.log("raycastFirst", raycastResult);
+      if (!raycastResult) return;
       if (
         raycastResult.entity.tags.has("house_item") &&
         this.inputTarget.name === raycastResult.entity.setter
