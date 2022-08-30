@@ -25,20 +25,25 @@ class ObjectManager extends pc.ScriptType {
 
     const objectPos = new pc.Vec3();
     objectPos.set(pos[0], pos[1], pos[2]);
-    if (inst.rigidbody) inst.rigidbody.teleport(objectPos);
-    else inst.setPosition(objectPos);
-    if (object.rotY !== 0) inst.setEulerAngles(0, object.rotY, 0);
+    if (inst.rigidbody) {
+      if (object.rotY === 0) {
+        inst.rigidbody.teleport(objectPos);
+      } else {
+        this.vec.set(0, object.rotY, 0);
+        this.quat.setFromEulerAngles(this.vec);
+        inst.rigidbody.teleport(objectPos, this.quat);
+      }
+    } else inst.setPosition(objectPos);
     this.objectMap.set(object.oid, inst);
     this._root.addChild(inst);
   }
 
   rotate(oid, rotY) {
     const object = this.objectMap.get(oid);
-    console.log("oid, rotY", oid, rotY);
     if (!object) return;
     this.vec.set(0, rotY, 0);
     this.quat.setFromEulerAngles(this.vec);
-    object.setRotation(this.quat);
+    object.rigidbody.teleport(object.getPosition(), this.quat);
   }
 
   destroy(oid) {
